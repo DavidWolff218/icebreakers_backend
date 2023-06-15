@@ -12,6 +12,7 @@ class RoomsController < ApplicationController
     room = Room.create({"room_name" => room_params[:room_name], "password" => room_params[:password], "host_id" => user.id, "host_name" => user.username, :game_started => false})
     join = UserRoom.create({"user_id" => user.id, "room_id" => room.id})
     question = Question.all.map {|question_obj| RoomQuestion.create({room_id: room.id, question_id: question_obj.id, is_active: true})}
+    Vote.create({room_id: room.id})
     if room
       payload = {room_id: room.id}
       token = JWT.encode(payload, "hmac_secret", 'HS256') 
