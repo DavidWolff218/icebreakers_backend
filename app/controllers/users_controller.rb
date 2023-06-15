@@ -121,22 +121,25 @@ end
       reshuffling_questions = true
     end
 
-    rand_num = rand(10)
-    # if rand_num.even? && question_array.length > 1
-    if rand_num && question_array.length > 1 
-      voting_questions = question_array.sample(2)
-      voting_question_A = Question.find(voting_questions.first.question_id)
-      voting_question_B = Question.find(voting_questions.second.question_id)
-    else
-      question_id = question_array.sample(1).first.question_id
+    # rand_num = rand(10)
+    # # if rand_num.even? && question_array.length > 1
+    # if rand_num && question_array.length > 1 
+    #   voting_questions = question_array.sample(2)
+    #   voting_question_A = Question.find(voting_questions.first.question_id)
+    #   voting_question_B = Question.find(voting_questions.second.question_id)
+    # else
+    #   question_id = question_array.sample(1).first.question_id
+    #   current_question = Question.find(question_id)
+    # end
+
+    question_id = question_array.sample(1).first.question_id
       current_question = Question.find(question_id)
-    end
    
     UsersChannel.broadcast_to room, { 
       currentPlayer: current_player, 
       currentQuestion: current_question,
-      votingQuestionA: voting_question_A,
-      votingQuestionB: voting_question_B, 
+      votingQuestionA: "",
+      votingQuestionB: "", 
       reshufflingUsers: reshuffling_users, 
       reshufflingQuestions: reshuffling_questions, 
       allUsers: all_users 
