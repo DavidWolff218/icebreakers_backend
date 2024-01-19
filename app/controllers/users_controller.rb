@@ -142,7 +142,8 @@ end
       votingQuestionB: "", 
       reshufflingUsers: reshuffling_users, 
       reshufflingQuestions: reshuffling_questions, 
-      allUsers: all_users 
+      allUsers: all_users,
+      room: room
     }
    
   end
