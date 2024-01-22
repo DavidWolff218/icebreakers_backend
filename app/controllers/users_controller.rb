@@ -2,14 +2,24 @@ class UsersController < ApplicationController
 
 
   def index
-    all_users = User.all
-    room = Room.find(user_params[:room])
-    UsersChannel.broadcast_to room, {allUsers: all_users}
+    # all_users = User.all
+    render json: {allUsers: all_users}
+    # room = Room.find(user_params[:room])
+    # UsersChannel.broadcast_to room, {allUsers: all_users}
+    # took this out when testing useEffect ^^
   end
 
-  def test
-    users = User.all 
-    room = Room.find(user_params[:room])
+  # def test
+  #   users = User.all 
+  #   room = Room.find(user_params[:room])
+  # end
+  # removed this, make sure all works before deleting
+
+  def by_room
+    room_id = params[:room_id]
+    room = Room.find(room_id)
+    users = room.users.all
+    render json: {allUsers: users}
   end
 
   def create

@@ -5,6 +5,8 @@ Rails.application.routes.draw do
   patch '/users/start/foo', to: 'users#start'
   patch '/users/voting_timer/foo', to: 'users#voting_timer_select'
 
+  get '/users/by_room/:room_id', to: 'users#by_room'
+
   resources :users
   resources :rooms
   resources :questions, only: [:index, :show, :update]
