@@ -9,12 +9,6 @@ class UsersController < ApplicationController
     # took this out when testing useEffect ^^
   end
 
-  # def test
-  #   users = User.all 
-  #   room = Room.find(user_params[:room])
-  # end
-  # removed this, make sure all works before deleting
-
   def by_room
     room_id = params[:room_id]
     room = Room.find(room_id)

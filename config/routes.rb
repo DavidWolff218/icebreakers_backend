@@ -13,8 +13,6 @@ Rails.application.routes.draw do
 
   post '/', to: 'room_auth#create'
 
-  post '/users/test', to: 'users#test'
-
   mount ActionCable.server => '/cable'
 
 end
