@@ -166,8 +166,8 @@ end
 
   def destroy
     user = User.find(user_params[:id])
-    render json: user
     user.destroy
+    render json: user
   end
 
   private

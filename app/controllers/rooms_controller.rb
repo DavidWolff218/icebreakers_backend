@@ -24,11 +24,11 @@ class RoomsController < ApplicationController
 
   def destroy
     room = Room.find(room_params[:id])
-    render json: room
     room.users.destroy
     room.user_rooms.destroy
     room.room_questions.destroy
     room.destroy
+    render json: room
   end
 
   private
