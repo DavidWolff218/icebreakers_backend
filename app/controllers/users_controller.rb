@@ -103,7 +103,7 @@ end
     reshuffling_questions = false
     room = Room.find(user_params[:room])
     all_users = room.users.all
-    update_user = room.users.find_by(username: user_params[:currentPlayer])
+    update_user = room.users.find(user_params[:currentPlayerID])
     update_user.update(is_active: false)
     update_question = room.room_questions.find_by(question_id: question_params[:id])
     update_question.update(is_active: false)
@@ -173,7 +173,7 @@ end
   private
 
   def user_params
-    params.require(:user).permit(:username, :id, :room, :currentPlayer, :currentQuestion, :reshufflingUsers, :vote_id)
+    params.require(:user).permit(:username, :id, :room, :currentPlayer, :currentPlayerID, :currentQuestion, :reshufflingUsers, :vote_id)
   end
 
   def question_params
