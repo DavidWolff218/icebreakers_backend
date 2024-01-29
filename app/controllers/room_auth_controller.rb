@@ -13,6 +13,7 @@ class RoomAuthController < ApplicationController
       token = JWT.encode(payload, "hmac_secret", 'HS256')
       render json: { room: RoomSerializer.new(room), jwt: token, user: user }, status: :accepted
       # code below does send off what i need when a new user is made, check to see if json rendering before hand causes any problems
+      all_users = room.users.all
       UsersChannel.broadcast_to room, {allUsers: all_users, room: room}
     else
       render json: { error: 'Invalid roomname or password' }, status: :unauthorized
