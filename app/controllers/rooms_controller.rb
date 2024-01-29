@@ -28,7 +28,9 @@ class RoomsController < ApplicationController
     room.user_rooms.destroy
     room.room_questions.destroy
     room.destroy
-    render json: room
+    UsersChannel.broadcast_to room, {
+      endGame: true
+    }
   end
 
   private
