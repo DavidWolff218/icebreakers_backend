@@ -16,7 +16,7 @@ class RoomAuthController < ApplicationController
       all_users = room.users.all
       UsersChannel.broadcast_to room, {allUsers: all_users, room: room}
     else
-      render json: { error: 'Invalid roomname or password' }, status: :unauthorized
+      render json: { error: 'Invalid Room Name or Password' }, status: :unauthorized
     end
 
     
