@@ -15,10 +15,10 @@ class RoomAuthController < ApplicationController
       join = UserRoom.create({"user_id" => user.id, "room_id" => room.id})
       payload = {room_id: room.id, user_id: user.id}
       token = JWT.encode(payload, "hmac_secret", 'HS256')
+      # moved this broadcast (for waiting room names), to above render json for clarity, can be mvoed below if side effects noticed
+      all_users = room.users.all
+      UsersChannel.broadcast_to room, {allUsers: all_users, room: room}
       render json: { room: RoomSerializer.new(room), jwt: token, user: user }, status: :accepted
-      # code below removed as json handles all needed, keeping for refernce incase later issues
-      # all_users = room.users.all
-      # UsersChannel.broadcast_to room, {allUsers: all_users, room: room}
     else
       render json: { error: 'Invalid Room Name or Password' }, status: :unauthorized
     end

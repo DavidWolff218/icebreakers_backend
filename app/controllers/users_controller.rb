@@ -170,10 +170,17 @@ end
       begin
         decoded_token = JWT.decode(token, 'hmac_secret', true, algorithm: 'HS256')
         payload = decoded_token.first
-        byebug
+        user_id = payload['user_id']
+        room_id = payload['room_id']
+        room = Room.find(room_id)
+        user = User.find(user_id)
+        render json: ({room: room, user: user})
+      rescue JWT::DecodeError => e
+        render json: { error: 'Invalid token' }, status: :unauthorized
       end
-    end  
-
+    else
+      render json: { error: 'Token not provided' }, status: :unauthorized
+    end
   end
 
   def destroy
