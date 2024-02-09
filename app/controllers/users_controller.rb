@@ -164,6 +164,18 @@ end
     UsersChannel.broadcast_to room, { currentPlayer: current_player, currentQuestion: current_question, allUsers: all_users, room: room }
   end
 
+  def verify_token
+    token = request.headers['Authorization']&.split(' ')&.last
+    if token
+      begin
+        decoded_token = JWT.decode(token, 'hmac_secret', true, algorithm: 'HS256')
+        payload = decoded_token.first
+        byebug
+      end
+    end  
+
+  end
+
   def destroy
     user = User.find(user_params[:id])
     user.destroy

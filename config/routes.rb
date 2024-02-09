@@ -12,6 +12,8 @@ Rails.application.routes.draw do
   resources :questions, only: [:index, :show, :update]
 
   post '/', to: 'room_auth#create'
+  post '/verify_token', to: 'users#verify_token'
+
 
   mount ActionCable.server => '/cable'
 
