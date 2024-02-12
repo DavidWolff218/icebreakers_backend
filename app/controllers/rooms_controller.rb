@@ -23,8 +23,8 @@ class RoomsController < ApplicationController
     Vote.create({room_id: room.id})
     
     if room
-      payload = {room_id: room.id}
-      token = JWT.encode(payload, "hmac_secret", 'HS256') 
+      payload = {room_id: room.id, user_id: user.id}
+      token = JWT.encode(payload, "hmac_secret", 'HS256')
       render json: { room: room, jwt: token, user: user }, status: :created
     else
       render json: { errors: user.errors.messages }, status: :not_acceptable

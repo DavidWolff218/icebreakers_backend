@@ -164,6 +164,25 @@ end
     UsersChannel.broadcast_to room, { currentPlayer: current_player, currentQuestion: current_question, allUsers: all_users, room: room }
   end
 
+  def verify_token
+    token = request.headers['Authorization']&.split(' ')&.last
+    if token
+      begin
+        decoded_token = JWT.decode(token, 'hmac_secret', true, algorithm: 'HS256')
+        payload = decoded_token.first
+        user_id = payload['user_id']
+        room_id = payload['room_id']
+        room = Room.find(room_id)
+        user = User.find(user_id)
+        render json: ({room: room, user: user})
+      rescue JWT::DecodeError => e
+        render json: { error: 'Invalid token' }, status: :unauthorized
+      end
+    else
+      render json: { error: 'Token not provided' }, status: :unauthorized
+    end
+  end
+
   def destroy
     user = User.find(user_params[:id])
     user.destroy
