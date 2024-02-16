@@ -104,9 +104,9 @@ end
     room = Room.find(user_params[:room])
     all_users = room.users.all
     update_user = room.users.find(user_params[:currentPlayerID])
-    update_user.update(is_active: false)
+    update_user.update(is_active: false, is_selected: false)
     update_question = room.room_questions.find_by(question_id: question_params[:id])
-    update_question.update(is_active: false)
+    update_question.update(is_active: false, is_selected: false)
     user_array = room.users.select { |user_obj| user_obj.is_active === true }
     
     if user_array.length === 0  
@@ -116,6 +116,7 @@ end
     end
     
     current_player = user_array.sample(1).first
+    current_player.update(is_selected: true)
     question_array = room.room_questions.all.select { |user_obj| user_obj.is_active === true }
   
   
@@ -136,8 +137,9 @@ end
     #   current_question = Question.find(question_id)
     # end
 
-    question_id = question_array.sample(1).first.question_id
-      current_question = Question.find(question_id)
+    question = question_array.sample(1).first
+    question.update(is_selected: true)
+    current_question = Question.find(question.question_id)
    
     UsersChannel.broadcast_to room, { 
       currentPlayer: current_player, 
@@ -158,9 +160,11 @@ end
     room.update(game_started: true)
     user_array = room.users.select { |room_obj| room_obj.is_active === true }
     current_player = user_array.sample(1).first
+    current_player.update(is_selected: true)
     question_array = room.room_questions.select { |room_obj| room_obj.is_active === true }
-    question_id = question_array.sample(1).first.question_id
-    current_question = Question.all.find(question_id)
+    question = question_array.sample(1).first
+    question.update(is_selected: true)
+    current_question = Question.find(question.question_id)
     UsersChannel.broadcast_to room, { currentPlayer: current_player, currentQuestion: current_question, allUsers: all_users, room: room }
   end
 
