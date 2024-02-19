@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   patch '/users/voting_timer/foo', to: 'users#voting_timer_select'
 
   get '/users/by_room/:room_id', to: 'users#by_room'
+  get '/users/midgame/:room_id', to: 'users#midgame'
 
   resources :users
   resources :rooms
@@ -13,6 +14,7 @@ Rails.application.routes.draw do
 
   post '/', to: 'room_auth#create'
   post '/verify_token', to: 'users#verify_token'
+
 
 
   mount ActionCable.server => '/cable'

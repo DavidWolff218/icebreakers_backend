@@ -10,6 +10,7 @@ class UsersController < ApplicationController
   end
 
   def by_room
+    print "&&&&&&&&BY ROOM&&&&&&&&&&&&&&&&&&&&&&"
     room_id = params[:room_id]
     room = Room.find(room_id)
     users = room.users.all
@@ -178,6 +179,9 @@ end
         room_id = payload['room_id']
         room = Room.find(room_id)
         user = User.find(user_id)
+        selected_user = room.users.find_by(is_selected: true)
+        selected_question = room.room_questions.find_by(is_selected: true)
+        # might want to add find_by! for error handling
         render json: ({room: room, user: user})
       rescue JWT::DecodeError => e
         render json: { error: 'Invalid token' }, status: :unauthorized
@@ -185,6 +189,21 @@ end
     else
       render json: { error: 'Token not provided' }, status: :unauthorized
     end
+  end
+
+  def midgame
+    print "IN HERE DOING NOTHING**********************"
+    # room = Room.find(user_params[:room])
+    # all_users = room.users.all
+    # begin
+    #   active_user = room.users.find_by!(is_active: true)
+    #   print"%%%%%%%%$$$$$$$$%%%%%%%%%$$$$$$$$%%%%%" active_user
+    #   active_question = room.room_questions.find_by!(is_active: true)
+    # rescue ActiveRecord::RecordNotFound => e
+    #   render json: { error: "An error occurred while fetching data: #{e.message}" }, status: :not_found
+    # end
+    # render json: {allUsers: all_users, currentPlayer: current_player, currentQuestion: current_question, room: room }
+    # # check to see if sending the whole room object is needed
   end
 
   def destroy
