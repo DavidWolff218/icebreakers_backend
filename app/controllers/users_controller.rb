@@ -10,7 +10,7 @@ class UsersController < ApplicationController
   end
 
   def by_room
-    print "&&&&&&&&BY ROOM&&&&&&&&&&&&&&&&&&&&&&"
+    print "********* I AM IN BY_ROOM **********"
     room_id = params[:room_id]
     room = Room.find(room_id)
     users = room.users.all
@@ -192,18 +192,18 @@ end
   end
 
   def midgame
-    print "IN HERE DOING NOTHING**********************"
-    # room = Room.find(user_params[:room])
-    # all_users = room.users.all
-    # begin
-    #   active_user = room.users.find_by!(is_active: true)
-    #   print"%%%%%%%%$$$$$$$$%%%%%%%%%$$$$$$$$%%%%%" active_user
-    #   active_question = room.room_questions.find_by!(is_active: true)
-    # rescue ActiveRecord::RecordNotFound => e
-    #   render json: { error: "An error occurred while fetching data: #{e.message}" }, status: :not_found
-    # end
-    # render json: {allUsers: all_users, currentPlayer: current_player, currentQuestion: current_question, room: room }
-    # # check to see if sending the whole room object is needed
+    room = Room.find(params[:room_id])
+    all_users = room.users.all
+    # byebug
+    begin
+      current_user = room.users.find_by!(is_active: true)
+      active_question = room.room_questions.find_by!(is_active: true)
+      current_question = Question.find(active_question.question_id)
+    rescue ActiveRecord::RecordNotFound => e
+      render json: { error: "An error occurred while fetching data: #{e.message}" }, status: :not_found
+    end
+    render json: {allUsers: all_users, currentPlayer: current_user, currentQuestion: current_question, room: room }
+    # check to see if sending the whole room object is needed
   end
 
   def destroy
