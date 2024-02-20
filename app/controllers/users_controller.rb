@@ -196,12 +196,13 @@ end
     all_users = room.users.all
     # byebug
     begin
-      current_user = room.users.find_by!(is_active: true)
-      active_question = room.room_questions.find_by!(is_active: true)
+      current_user = room.users.find_by!(is_selected: true)
+      active_question = room.room_questions.find_by!(is_selected: true)
       current_question = Question.find(active_question.question_id)
     rescue ActiveRecord::RecordNotFound => e
       render json: { error: "An error occurred while fetching data: #{e.message}" }, status: :not_found
     end
+    UsersChannel.broadcast_to room, { allUsers: all_users }
     render json: {allUsers: all_users, currentPlayer: current_user, currentQuestion: current_question, room: room }
     # check to see if sending the whole room object is needed
   end
