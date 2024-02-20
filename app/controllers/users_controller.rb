@@ -10,6 +10,7 @@ class UsersController < ApplicationController
   end
 
   def by_room
+    print "********* I AM IN BY_ROOM **********"
     room_id = params[:room_id]
     room = Room.find(room_id)
     users = room.users.all
@@ -104,9 +105,9 @@ end
     room = Room.find(user_params[:room])
     all_users = room.users.all
     update_user = room.users.find(user_params[:currentPlayerID])
-    update_user.update(is_active: false)
+    update_user.update(is_active: false, is_selected: false)
     update_question = room.room_questions.find_by(question_id: question_params[:id])
-    update_question.update(is_active: false)
+    update_question.update(is_active: false, is_selected: false)
     user_array = room.users.select { |user_obj| user_obj.is_active === true }
     
     if user_array.length === 0  
@@ -116,6 +117,7 @@ end
     end
     
     current_player = user_array.sample(1).first
+    current_player.update(is_selected: true)
     question_array = room.room_questions.all.select { |user_obj| user_obj.is_active === true }
   
   
@@ -136,8 +138,9 @@ end
     #   current_question = Question.find(question_id)
     # end
 
-    question_id = question_array.sample(1).first.question_id
-      current_question = Question.find(question_id)
+    question = question_array.sample(1).first
+    question.update(is_selected: true)
+    current_question = Question.find(question.question_id)
    
     UsersChannel.broadcast_to room, { 
       currentPlayer: current_player, 
@@ -158,9 +161,11 @@ end
     room.update(game_started: true)
     user_array = room.users.select { |room_obj| room_obj.is_active === true }
     current_player = user_array.sample(1).first
+    current_player.update(is_selected: true)
     question_array = room.room_questions.select { |room_obj| room_obj.is_active === true }
-    question_id = question_array.sample(1).first.question_id
-    current_question = Question.all.find(question_id)
+    question = question_array.sample(1).first
+    question.update(is_selected: true)
+    current_question = Question.find(question.question_id)
     UsersChannel.broadcast_to room, { currentPlayer: current_player, currentQuestion: current_question, allUsers: all_users, room: room }
   end
 
@@ -174,6 +179,9 @@ end
         room_id = payload['room_id']
         room = Room.find(room_id)
         user = User.find(user_id)
+        selected_user = room.users.find_by(is_selected: true)
+        selected_question = room.room_questions.find_by(is_selected: true)
+        # might want to add find_by! for error handling
         render json: ({room: room, user: user})
       rescue JWT::DecodeError => e
         render json: { error: 'Invalid token' }, status: :unauthorized
@@ -181,6 +189,22 @@ end
     else
       render json: { error: 'Token not provided' }, status: :unauthorized
     end
+  end
+
+  def midgame
+    room = Room.find(params[:room_id])
+    all_users = room.users.all
+    # byebug
+    begin
+      current_user = room.users.find_by!(is_selected: true)
+      active_question = room.room_questions.find_by!(is_selected: true)
+      current_question = Question.find(active_question.question_id)
+    rescue ActiveRecord::RecordNotFound => e
+      render json: { error: "An error occurred while fetching data: #{e.message}" }, status: :not_found
+    end
+    UsersChannel.broadcast_to room, { allUsers: all_users }
+    render json: {allUsers: all_users, currentPlayer: current_user, currentQuestion: current_question, room: room }
+    # check to see if sending the whole room object is needed
   end
 
   def destroy
