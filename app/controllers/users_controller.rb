@@ -1,14 +1,5 @@
 class UsersController < ApplicationController 
 
-
-  def index
-    # all_users = User.all
-    render json: {allUsers: all_users}
-    # room = Room.find(user_params[:room])
-    # UsersChannel.broadcast_to room, {allUsers: all_users}
-    # took this out when testing useEffect ^^
-  end
-
   def by_room
     room_id = params[:room_id]
     room = Room.find(room_id)
@@ -18,10 +9,6 @@ class UsersController < ApplicationController
 
   def create
     user = User.new(user_params)
-  end
-
-  def show 
-    user = User.find(user_params[:id])
   end
 
   def select
