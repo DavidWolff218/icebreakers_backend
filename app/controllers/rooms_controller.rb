@@ -1,11 +1,6 @@
 require "jwt"
 
 class RoomsController < ApplicationController 
-
-  def new
-    room = Room.new
-    user = User.new
-  end
   
   def create
 
