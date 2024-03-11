@@ -1,16 +1,6 @@
 class UsersController < ApplicationController 
 
-
-  def index
-    # all_users = User.all
-    render json: {allUsers: all_users}
-    # room = Room.find(user_params[:room])
-    # UsersChannel.broadcast_to room, {allUsers: all_users}
-    # took this out when testing useEffect ^^
-  end
-
   def by_room
-    print "********* I AM IN BY_ROOM **********"
     room_id = params[:room_id]
     room = Room.find(room_id)
     users = room.users.all
@@ -20,84 +10,6 @@ class UsersController < ApplicationController
   def create
     user = User.new(user_params)
   end
-
-  def show 
-    user = User.find(user_params[:id])
-  end
-
-  def voting_select
-    vote = Question.find(user_params[:vote_id])
-    collection = Vote.find_by(room_id: user_params[:room])
-    room = Room.find(user_params[:room])
-    current_player = room.users.find_by(username: user_params[:currentPlayer])
-    all_users = room.users.all
-    if collection.votes_A.length === 0 && collection.votes_B.length === 0
-      collection.votes_A << vote.id
-      collection.save()
-    elsif collection.votes_A[0] === vote.id
-      collection.votes_A << vote.id
-      collection.save()
-    else 
-      collection.votes_B << vote.id
-      collection.save()
-    end
-    
-    if collection.votes_A.count + collection.votes_B.count === all_users.count
-      if collection.votes_A.count > collection.votes_B.count
-        current_question = Question.find(collection.votes_A[0])
-      elsif collection.votes_A.count < collection.votes_B.count
-        current_question = Question.find(collection.votes_B[0])
-      elsif collection.votes_A.count === collection.votes_B.count
-        rand_num = rand(2)
-        if rand_num.even?
-          current_question = Question.find(collection.votes_A[0])
-        else 
-          current_question = Question.find(collection.votes_B[0])
-        end
-      end
-      collection.update(votes_A: [], votes_B: [])
-      UsersChannel.broadcast_to room, {  
-      currentPlayer: current_player, 
-      currentQuestion: current_question,
-      votingQuestionA: "",
-      votingQuestionB: "", 
-      reshufflingUsers: false, 
-      reshufflingQuestions: false, 
-      allUsers: all_users 
-      }
-    end
-  end
-
-  def voting_timer_select
-    collection = Vote.find_by(room_id: user_params[:room])
-    room = Room.find(user_params[:room])
-    current_player = room.users.find_by(username: user_params[:currentPlayer])
-    all_users = room.users.all
-    p "###############", collection
-    if collection.votes_A.count > collection.votes_B.count
-      current_question = Question.find(collection.votes_A[0])
-      # p "^^^^^^^^^^^^^^HERE^^^^^^^^^^^^", current_question
-    elsif collection.votes_A.count < collection.votes_B.count
-      current_question = Question.find(collection.votes_B[0])
-    elsif collection.votes_A.count === collection.votes_B.count
-      rand_num = rand(2)
-      if rand_num.even?
-        current_question = Question.find(collection.votes_A[0])
-      else 
-        current_question = Question.find(collection.votes_B[0])
-      end
-    end
-      collection.update(votes_A: [], votes_B: [])
-      UsersChannel.broadcast_to room, {  
-      currentPlayer: current_player, 
-      currentQuestion: current_question,
-      votingQuestionA: "",
-      votingQuestionB: "", 
-      reshufflingUsers: false, 
-      reshufflingQuestions: false, 
-      allUsers: all_users 
-      }
-end
 
   def select
     reshuffling_users = false
@@ -224,3 +136,80 @@ end
   end
 
 end
+
+
+
+
+  # def voting_select
+  #   vote = Question.find(user_params[:vote_id])
+  #   collection = Vote.find_by(room_id: user_params[:room])
+  #   room = Room.find(user_params[:room])
+  #   current_player = room.users.find_by(username: user_params[:currentPlayer])
+  #   all_users = room.users.all
+  #   if collection.votes_A.length === 0 && collection.votes_B.length === 0
+  #     collection.votes_A << vote.id
+  #     collection.save()
+  #   elsif collection.votes_A[0] === vote.id
+  #     collection.votes_A << vote.id
+  #     collection.save()
+  #   else 
+  #     collection.votes_B << vote.id
+  #     collection.save()
+  #   end
+    
+  #   if collection.votes_A.count + collection.votes_B.count === all_users.count
+  #     if collection.votes_A.count > collection.votes_B.count
+  #       current_question = Question.find(collection.votes_A[0])
+  #     elsif collection.votes_A.count < collection.votes_B.count
+  #       current_question = Question.find(collection.votes_B[0])
+  #     elsif collection.votes_A.count === collection.votes_B.count
+  #       rand_num = rand(2)
+  #       if rand_num.even?
+  #         current_question = Question.find(collection.votes_A[0])
+  #       else 
+  #         current_question = Question.find(collection.votes_B[0])
+  #       end
+  #     end
+  #     collection.update(votes_A: [], votes_B: [])
+  #     UsersChannel.broadcast_to room, {  
+  #     currentPlayer: current_player, 
+  #     currentQuestion: current_question,
+  #     votingQuestionA: "",
+  #     votingQuestionB: "", 
+  #     reshufflingUsers: false, 
+  #     reshufflingQuestions: false, 
+  #     allUsers: all_users 
+  #     }
+  #   end
+  # end
+
+#   def voting_timer_select
+#     collection = Vote.find_by(room_id: user_params[:room])
+#     room = Room.find(user_params[:room])
+#     current_player = room.users.find_by(username: user_params[:currentPlayer])
+#     all_users = room.users.all
+#     p "###############", collection
+#     if collection.votes_A.count > collection.votes_B.count
+#       current_question = Question.find(collection.votes_A[0])
+#       # p "^^^^^^^^^^^^^^HERE^^^^^^^^^^^^", current_question
+#     elsif collection.votes_A.count < collection.votes_B.count
+#       current_question = Question.find(collection.votes_B[0])
+#     elsif collection.votes_A.count === collection.votes_B.count
+#       rand_num = rand(2)
+#       if rand_num.even?
+#         current_question = Question.find(collection.votes_A[0])
+#       else 
+#         current_question = Question.find(collection.votes_B[0])
+#       end
+#     end
+#       collection.update(votes_A: [], votes_B: [])
+#       UsersChannel.broadcast_to room, {  
+#       currentPlayer: current_player, 
+#       currentQuestion: current_question,
+#       votingQuestionA: "",
+#       votingQuestionB: "", 
+#       reshufflingUsers: false, 
+#       reshufflingQuestions: false, 
+#       allUsers: all_users 
+#       }
+# end
