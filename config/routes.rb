@@ -7,6 +7,7 @@ Rails.application.routes.draw do
 
   get '/users/by_room/:room_id', to: 'users#by_room'
   get '/users/midgame/:room_id', to: 'users#midgame'
+  get '/rooms/room_code', to: 'rooms#room_code'
 
   resources :users
   resources :rooms
