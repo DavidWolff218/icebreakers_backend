@@ -1,6 +1,18 @@
 require "jwt"
 
 class RoomsController < ApplicationController 
+
+  def room_code
+    def generate_code()
+      charset = Array('A'..'Z')
+      Array.new(4) { charset.sample }.join
+    end
+    room = generate_code()
+    while Room.exists?(room_name: room)
+      room = generate_code()
+    end
+    render json: {room_name: room}
+  end
   
   def create
 
