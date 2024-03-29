@@ -57,8 +57,8 @@ class UsersController < ApplicationController
     UsersChannel.broadcast_to room, { 
       currentPlayer: current_player, 
       currentQuestion: current_question,
-      votingQuestionA: "",
-      votingQuestionB: "", 
+      # votingQuestionA: "",
+      # votingQuestionB: "", 
       reshufflingUsers: reshuffling_users, 
       reshufflingQuestions: reshuffling_questions, 
       allUsers: all_users,
