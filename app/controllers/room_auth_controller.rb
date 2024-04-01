@@ -1,8 +1,8 @@
-class RoomAuthController < ApplicationController 
+class RoomAuthController < ApplicationController
 
   def create
     room = Room.find_by(room_name: room_params[:room_name])
-    if room && room.authenticate(room_params[:password])
+    if room
       if room.users.exists?(username: room_params[:username])
         render json: {error: "That Player Name is already being used, please pick a new one"}, status: :conflict
         return
@@ -16,14 +16,14 @@ class RoomAuthController < ApplicationController
       UsersChannel.broadcast_to room, {allUsers: all_users, room: room}
       render json: { room: RoomSerializer.new(room), jwt: token, user: user }, status: :accepted
     else
-      render json: { error: 'Invalid Room Name or Password' }, status: :unauthorized
+      render json: { error: 'Invalid Room Name' }, status: :unauthorized
     end
   end
 
   private
 
   def room_params
-    params.require(:room).permit(:room_name, :password, :username)
+    params.require(:room).permit(:room_name, :username)
   end
 
 end
