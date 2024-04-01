@@ -1,7 +1,8 @@
 class RoomAuthController < ApplicationController
 
   def create
-    room = Room.find_by(room_name: room_params[:room_name])
+
+    room = Room.find_by(room_name: room_params[:room_name].upcase!)
     if room
       if room.users.exists?(username: room_params[:username])
         render json: {error: "That Player Name is already being used, please pick a new one"}, status: :conflict
