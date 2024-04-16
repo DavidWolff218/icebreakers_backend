@@ -11,9 +11,20 @@ class UsersController < ApplicationController
     user = User.new(user_params)
   end
 
-  def select_players(users_array)
-
-  end
+  # def select_players(users_array)
+  #   update_user = room.users.find(user_params[:currentPlayerID])
+  #   update_user.update(is_active: false, is_selected: false)
+  #   user_array = room.users.select { |user_obj| user_obj.is_active === true }
+    
+  #   if user_array.length === 0  
+  #     room.users.map { |user_obj| user_obj.update(is_active: true) } 
+  #     user_array = room.users
+  #     reshuffling_users = true 
+  #   end
+    
+  #   current_player = user_array.sample(1).first
+  #   current_player.update(is_selected: true)
+  # end
 
   def select
     reshuffling_users = false
@@ -34,7 +45,7 @@ class UsersController < ApplicationController
     
     current_player = user_array.sample(1).first
     current_player.update(is_selected: true)
-    question_array = room.room_questions.all.select { |user_obj| user_obj.is_active === true }
+    question_array = room.room_questions.all.select { |question_obj| question_obj.is_active === true }
   
   
     if question_array.length === 0
