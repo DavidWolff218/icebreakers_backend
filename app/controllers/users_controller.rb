@@ -11,6 +11,10 @@ class UsersController < ApplicationController
     user = User.new(user_params)
   end
 
+  def select_players(users_array)
+
+  end
+
   def select
     reshuffling_users = false
     reshuffling_questions = false
