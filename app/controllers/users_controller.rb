@@ -28,7 +28,7 @@ class UsersController < ApplicationController
 
   def select
     byebug
-    reshuffling_users = false
+    # reshuffling_users = false
     reshuffling_questions = false
     room = Room.find(user_params[:room])
     all_users = room.users.all
@@ -36,7 +36,7 @@ class UsersController < ApplicationController
     update_previous_player.update(is_active: false, is_selected: false)
     update_question = room.room_questions.find_by(question_id: question_params[:id])
     update_question.update(is_active: false, is_selected: false)
-    user_array = room.users.select { |user_obj| user_obj.is_active === true }
+    user_array = room.users.select { |user_obj| user_obj.is_active === true && user_obj.is_next === false }
     
     if user_array.length === 0  
       room.users.map { |user_obj| user_obj.update(is_active: true) } 
