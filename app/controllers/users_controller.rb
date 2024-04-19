@@ -27,12 +27,13 @@ class UsersController < ApplicationController
   # end
 
   def select
+    byebug
     reshuffling_users = false
     reshuffling_questions = false
     room = Room.find(user_params[:room])
     all_users = room.users.all
-    update_user = room.users.find(user_params[:currentPlayerID])
-    update_user.update(is_active: false, is_selected: false)
+    update_previous_player = room.users.find(user_params[:currentPlayerID])
+    update_previous_player.update(is_active: false, is_selected: false)
     update_question = room.room_questions.find_by(question_id: question_params[:id])
     update_question.update(is_active: false, is_selected: false)
     user_array = room.users.select { |user_obj| user_obj.is_active === true }
@@ -40,14 +41,23 @@ class UsersController < ApplicationController
     if user_array.length === 0  
       room.users.map { |user_obj| user_obj.update(is_active: true) } 
       user_array = room.users
-      reshuffling_users = true 
+      reshuffling_users = true
+      current_player, next_player = user_array.sample(2)
+      current_player.update(is_selected: true)
+      next_player.update(is_next: true)   
+    elsif user_array.length === 1 
+      current_player = room.users.find(user_params[:nextPlayer])
+      current_player.update(is_next: false, is_selected: true)
+      next_player = "new round coming next"
+    else
+      current_player = room.users.find(user_params[:nextPlayer])
+      current_player.update(is_next: false, is_selected: true)
+      next_player = user_array.sample(1).first
+      next_player.update(is_next: true)
     end
     
-    current_player = user_array.sample(1).first
-    current_player.update(is_selected: true)
     question_array = room.room_questions.all.select { |question_obj| question_obj.is_active === true }
-  
-  
+
     if question_array.length === 0
       room.room_questions.map { |question_obj| question_obj.update(is_active: true) }
       question_array = room.room_questions
@@ -68,10 +78,11 @@ class UsersController < ApplicationController
     question = question_array.sample(1).first
     question.update(is_selected: true)
     current_question = Question.find(question.question_id)
-   
+   byebug
     UsersChannel.broadcast_to room, { 
       currentPlayer: current_player, 
       currentQuestion: current_question,
+      nextPlayer: next_player
       # votingQuestionA: "",
       # votingQuestionB: "", 
       reshufflingUsers: reshuffling_users, 
@@ -86,14 +97,24 @@ class UsersController < ApplicationController
     room = Room.find(user_params[:room])
     all_users = room.users.all
     room.update(game_started: true)
-    user_array = room.users.select { |room_obj| room_obj.is_active === true }
-    current_player = user_array.sample(1).first
-    current_player.update(is_selected: true)
+    user_array = room.users.select { |user_obj| user_obj.is_active === true }
+    
+    if user_array.length === 1
+      # remove later when restrictions in place to prevent 1 player
+      current_player = user_array.sample(1).first
+      current_player.update(is_selected: true)  
+      next_player = "reshuffling players next"
+    else
+      current_player, next_player = user_array.sample(2)
+      current_player.update(is_selected: true)
+      next_player.update(is_next: true)   
+    end
+
     question_array = room.room_questions.select { |room_obj| room_obj.is_active === true }
     question = question_array.sample(1).first
     question.update(is_selected: true)
     current_question = Question.find(question.question_id)
-    UsersChannel.broadcast_to room, { currentPlayer: current_player, currentQuestion: current_question, allUsers: all_users, room: room }
+    UsersChannel.broadcast_to room, { currentPlayer: current_player, currentQuestion: current_question, allUsers: all_users, room: room, nextPlayer: next_player }
   end
 
   def verify_token
@@ -143,7 +164,7 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:username, :id, :room, :currentPlayer, :currentPlayerID, :currentQuestion, :reshufflingUsers, :vote_id)
+    params.require(:user).permit(:username, :id, :room, :currentPlayer, :currentPlayerID, :currentQuestion, :reshufflingUsers, :vote_id, :nextPlayer)
   end
 
   def question_params
