@@ -27,28 +27,34 @@ class UsersController < ApplicationController
   # end
 
   def select
-    byebug
+
     # reshuffling_users = false
     reshuffling_questions = false
     room = Room.find(user_params[:room])
     all_users = room.users.all
     update_previous_player = room.users.find(user_params[:currentPlayerID])
-    update_previous_player.update(is_active: false, is_selected: false)
+    if update_previous_player.is_last === true
+      update_previous_player.update( is_selected: false)
+    else 
+      update_previous_player.update(is_active: false, is_selected: false)
+    end  
     update_question = room.room_questions.find_by(question_id: question_params[:id])
     update_question.update(is_active: false, is_selected: false)
     user_array = room.users.select { |user_obj| user_obj.is_active === true && user_obj.is_next === false }
     
     if user_array.length === 0  
-      room.users.map { |user_obj| user_obj.update(is_active: true) } 
-      user_array = room.users
-      reshuffling_users = true
-      current_player, next_player = user_array.sample(2)
-      current_player.update(is_selected: true)
-      next_player.update(is_next: true)   
-    elsif user_array.length === 1 
+      # user_array = room.users
       current_player = room.users.find(user_params[:nextPlayer])
-      current_player.update(is_next: false, is_selected: true)
-      next_player = "new round coming next"
+      current_player.update(is_next: false, is_selected: true, is_last: true)
+      users_reload = room.reload.users 
+      users_reload.map { |user_obj| user_obj.update(is_active: true) } 
+      filtered_users = users_reload.reject { |user| user.is_selected }
+      next_player = filtered_users.sample(1).first
+      next_player.update(is_next: true)   
+    # elsif user_array.length === 1 
+    #   current_player, next_player = user_array.sample(2)
+    #   next_player = user_array.sample(1).first
+    #   next_player.update(is_next: true, )
     else
       current_player = room.users.find(user_params[:nextPlayer])
       current_player.update(is_next: false, is_selected: true)
@@ -78,14 +84,14 @@ class UsersController < ApplicationController
     question = question_array.sample(1).first
     question.update(is_selected: true)
     current_question = Question.find(question.question_id)
-   byebug
+  
     UsersChannel.broadcast_to room, { 
       currentPlayer: current_player, 
       currentQuestion: current_question,
-      nextPlayer: next_player
+      nextPlayer: next_player,
       # votingQuestionA: "",
       # votingQuestionB: "", 
-      reshufflingUsers: reshuffling_users, 
+      # reshufflingUsers: reshuffling_users, 
       reshufflingQuestions: reshuffling_questions, 
       allUsers: all_users,
       room: room
