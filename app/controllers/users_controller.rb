@@ -93,12 +93,13 @@ class UsersController < ApplicationController
     current_player, next_player = user_array.sample(2)
     current_player.update(is_selected: true)
     next_player.update(is_next: true)   
-
     question_array = room.room_questions.select { |room_obj| room_obj.is_active === true }
     question = question_array.sample(1).first
     question.update(is_selected: true)
     current_question = Question.find(question.question_id)
-    UsersChannel.broadcast_to room, { currentPlayer: current_player, currentQuestion: current_question, allUsers: all_users, room: room, nextPlayer: next_player }
+    send_current_player = {username: current_player.username, id: current_player.id}
+    send_next_player = {username: next_player.username, id: next_player.id}
+    UsersChannel.broadcast_to room, { currentPlayer: send_current_player, currentQuestion: current_question, allUsers: all_users, room: room, nextPlayer: send_next_player }
   end
 
   def verify_token
