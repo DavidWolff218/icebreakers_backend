@@ -64,11 +64,13 @@ class UsersController < ApplicationController
     question = question_array.sample(1).first
     question.update(is_selected: true)
     current_question = Question.find(question.question_id)
+    send_current_player = {username: current_player.username, id: current_player.id}
+    send_next_player = {username: next_player.username, id: next_player.id}
   
     UsersChannel.broadcast_to room, { 
-      currentPlayer: current_player, 
+      currentPlayer: send_current_player, 
       currentQuestion: current_question,
-      nextPlayer: next_player,
+      nextPlayer: send_next_player,
       # votingQuestionA: "",
       # votingQuestionB: "", 
       # reshufflingUsers: reshuffling_users, 
