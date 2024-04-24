@@ -11,24 +11,8 @@ class UsersController < ApplicationController
     user = User.new(user_params)
   end
 
-  # def select_players(users_array)
-  #   update_user = room.users.find(user_params[:currentPlayerID])
-  #   update_user.update(is_active: false, is_selected: false)
-  #   user_array = room.users.select { |user_obj| user_obj.is_active === true }
-    
-  #   if user_array.length === 0  
-  #     room.users.map { |user_obj| user_obj.update(is_active: true) } 
-  #     user_array = room.users
-  #     reshuffling_users = true 
-  #   end
-    
-  #   current_player = user_array.sample(1).first
-  #   current_player.update(is_selected: true)
-  # end
-
   def select
 
-    # reshuffling_users = false
     reshuffling_questions = false
     room = Room.find(user_params[:room])
     all_users = room.users.all
@@ -51,10 +35,6 @@ class UsersController < ApplicationController
       filtered_users = users_reload.reject { |user| user.is_selected }
       next_player = filtered_users.sample(1).first
       next_player.update(is_next: true)   
-    # elsif user_array.length === 1 
-    #   current_player, next_player = user_array.sample(2)
-    #   next_player = user_array.sample(1).first
-    #   next_player.update(is_next: true, )
     else
       current_player = room.users.find(user_params[:nextPlayer])
       current_player.update(is_next: false, is_selected: true)
@@ -102,19 +82,17 @@ class UsersController < ApplicationController
   def start
     room = Room.find(user_params[:room])
     all_users = room.users.all
-    room.update(game_started: true)
+    
     user_array = room.users.select { |user_obj| user_obj.is_active === true }
     
-    if user_array.length === 1
-      # remove later when restrictions in place to prevent 1 player
-      current_player = user_array.sample(1).first
-      current_player.update(is_selected: true)  
-      next_player = "reshuffling players next"
-    else
-      current_player, next_player = user_array.sample(2)
-      current_player.update(is_selected: true)
-      next_player.update(is_next: true)   
+    if user_array.length <= 1
+      render json: { error: "There needs to be more than one player to start the game." }, status: :unprocessable_entity
+      return
     end
+    room.update(game_started: true)
+    current_player, next_player = user_array.sample(2)
+    current_player.update(is_selected: true)
+    next_player.update(is_next: true)   
 
     question_array = room.room_questions.select { |room_obj| room_obj.is_active === true }
     question = question_array.sample(1).first
