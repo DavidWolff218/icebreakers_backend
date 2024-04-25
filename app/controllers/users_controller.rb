@@ -15,7 +15,6 @@ class UsersController < ApplicationController
 
     reshuffling_questions = false
     room = Room.find(user_params[:room])
-    all_users = room.users.all
     update_previous_player = room.users.find(user_params[:currentPlayerID])
     if update_previous_player.is_last === true
       update_previous_player.update( is_selected: false)
@@ -75,7 +74,6 @@ class UsersController < ApplicationController
       # votingQuestionB: "", 
       # reshufflingUsers: reshuffling_users, 
       reshufflingQuestions: reshuffling_questions, 
-      allUsers: all_users,
       room: room
     }
    
@@ -83,7 +81,6 @@ class UsersController < ApplicationController
 
   def start
     room = Room.find(user_params[:room])
-    all_users = room.users.all
     
     user_array = room.users.select { |user_obj| user_obj.is_active === true }
     
@@ -101,7 +98,7 @@ class UsersController < ApplicationController
     current_question = Question.find(question.question_id)
     send_current_player = {username: current_player.username, id: current_player.id}
     send_next_player = {username: next_player.username, id: next_player.id}
-    UsersChannel.broadcast_to room, { currentPlayer: send_current_player, currentQuestion: current_question, allUsers: all_users, room: room, nextPlayer: send_next_player }
+    UsersChannel.broadcast_to room, { currentPlayer: send_current_player, currentQuestion: current_question, room: room, nextPlayer: send_next_player }
   end
 
   def verify_token
@@ -129,7 +126,6 @@ class UsersController < ApplicationController
   def midgame
     room = Room.find(params[:room_id])
     all_users = room.users.all
-    # byebug
     begin
       current_player = room.users.find_by!(is_selected: true)
       next_player = room.users.find_by!(is_next: true)
