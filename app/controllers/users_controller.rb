@@ -143,8 +143,35 @@ class UsersController < ApplicationController
 
   def destroy
     user = User.find(user_params[:id])
-    user.destroy
-    render json: user
+    if user.is_next
+
+      user.destroy
+      room = Room.find(user_params[:room])
+      user_array = room.users.where(is_active: true).where(is_selected: [nil, false])
+      if user_array.length === 0
+        print "*********ARRAY IS ZEROOOOOO************"
+        # users_reload = room.reload.users 
+        current_player = room.users.find_by(is_selected: true)
+        current_player.update(is_last: true)
+        # user_array.update_all(is_active: true)
+        room.users.map { |user_obj| user_obj.update(is_active: true) } 
+        filtered_users = room.users.reject { |user| user.is_selected }
+        next_player = filtered_users.sample(1).first
+        next_player.update(is_next: true) 
+        UsersChannel.broadcast_to room, { nextPlayer: next_player }
+  
+      else
+        print "*********THERE ARE OTHERS************"  
+
+        next_player = user_array.sample(1).first
+        next_player.update(is_next: true)
+        UsersChannel.broadcast_to room, { nextPlayer: next_player }
+
+      end
+
+    else
+      user.destroy
+    end
   end
 
   private
