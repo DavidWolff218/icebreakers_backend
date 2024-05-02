@@ -125,7 +125,6 @@ class UsersController < ApplicationController
 
   def midgame
     room = Room.find(params[:room_id])
-    all_users = room.users
     begin
       current_player = room.users.find_by!(is_selected: true)
       next_player = room.users.find_by!(is_next: true)
@@ -136,8 +135,7 @@ class UsersController < ApplicationController
     rescue ActiveRecord::RecordNotFound => e
       render json: { error: "An error occurred while fetching data: #{e.message}" }, status: :not_found
     end
-    UsersChannel.broadcast_to room, { allUsers: all_users }
-    render json: {allUsers: all_users, currentPlayer: send_current_player, nextPlayer: send_next_player, currentQuestion: current_question, room: room }
+    render json: {currentPlayer: send_current_player, nextPlayer: send_next_player, currentQuestion: current_question, room: room }
     # check to see if sending the whole room object is needed
   end
 
@@ -251,6 +249,5 @@ end
 #       votingQuestionB: "", 
 #       reshufflingUsers: false, 
 #       reshufflingQuestions: false, 
-#       allUsers: all_users 
 #       }
 # end
