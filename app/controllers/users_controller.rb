@@ -27,7 +27,7 @@ class UsersController < ApplicationController
     
     if user_array.length === 0  
       # user_array = room.users
-      current_player = room.users.find(user_params[:nextPlayer])
+      current_player = room.users.find(user_params[:nextPlayerID])
       current_player.update(is_next: false, is_selected: true, is_last: true)
       users_reload = room.reload.users 
       users_reload.update_all(is_active: true) 
@@ -35,7 +35,7 @@ class UsersController < ApplicationController
       next_player = filtered_users.sample(1).first
       next_player.update(is_next: true)   
     else
-      current_player = room.users.find(user_params[:nextPlayer])
+      current_player = room.users.find(user_params[:nextPlayerID])
       current_player.update(is_next: false, is_selected: true)
       next_player = user_array.sample(1).first
       next_player.update(is_next: true)
@@ -167,7 +167,7 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:username, :id, :room, :currentPlayer, :currentPlayerID, :currentQuestion, :reshufflingUsers, :vote_id, :nextPlayer)
+    params.require(:user).permit(:username, :id, :room, :currentPlayer, :currentPlayerID, :currentQuestion, :reshufflingUsers, :vote_id, :nextPlayerID)
   end
 
   def question_params
