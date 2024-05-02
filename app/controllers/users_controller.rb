@@ -3,7 +3,7 @@ class UsersController < ApplicationController
   def by_room
     room_id = params[:room_id]
     room = Room.find(room_id)
-    users = room.users.all
+    users = room.users
     render json: {allUsers: users}
   end
 
@@ -23,14 +23,14 @@ class UsersController < ApplicationController
     end  
     update_question = room.room_questions.find_by(question_id: question_params[:id])
     update_question.update(is_active: false, is_selected: false)
-    user_array = room.users.select { |user_obj| user_obj.is_active === true && user_obj.is_next === false }
+    user_array = room.users.where(is_active: true, is_next: false)
     
     if user_array.length === 0  
       # user_array = room.users
       current_player = room.users.find(user_params[:nextPlayer])
       current_player.update(is_next: false, is_selected: true, is_last: true)
       users_reload = room.reload.users 
-      users_reload.map { |user_obj| user_obj.update(is_active: true) } 
+      users_reload.update_all(is_active: true) 
       filtered_users = users_reload.reject { |user| user.is_selected }
       next_player = filtered_users.sample(1).first
       next_player.update(is_next: true)   
@@ -41,10 +41,10 @@ class UsersController < ApplicationController
       next_player.update(is_next: true)
     end
     
-    question_array = room.room_questions.all.select { |question_obj| question_obj.is_active === true }
+    question_array = room.room_questions.where(is_active: true)
 
     if question_array.length === 0
-      room.room_questions.map { |question_obj| question_obj.update(is_active: true) }
+      room.room_questions.update_all(is_active: true)
       question_array = room.room_questions
       reshuffling_questions = true
     end
@@ -82,7 +82,7 @@ class UsersController < ApplicationController
   def start
     room = Room.find(user_params[:room])
     
-    user_array = room.users.select { |user_obj| user_obj.is_active === true }
+    user_array = room.users.where(is_active: true )
     
     if user_array.length <= 1
       render json: { error: "There needs to be more than one player to start the game." }, status: :unprocessable_entity
@@ -92,7 +92,7 @@ class UsersController < ApplicationController
     current_player, next_player = user_array.sample(2)
     current_player.update(is_selected: true)
     next_player.update(is_next: true)   
-    question_array = room.room_questions.select { |room_obj| room_obj.is_active === true }
+    question_array = room.room_questions.where(is_active: true)
     question = question_array.sample(1).first
     question.update(is_selected: true)
     current_question = Question.find(question.question_id)
@@ -125,7 +125,7 @@ class UsersController < ApplicationController
 
   def midgame
     room = Room.find(params[:room_id])
-    all_users = room.users.all
+    all_users = room.users
     begin
       current_player = room.users.find_by!(is_selected: true)
       next_player = room.users.find_by!(is_next: true)
@@ -144,31 +144,23 @@ class UsersController < ApplicationController
   def destroy
     user = User.find(user_params[:id])
     if user.is_next
-
       user.destroy
       room = Room.find(user_params[:room])
       user_array = room.users.where(is_active: true).where(is_selected: [nil, false])
       if user_array.length === 0
-        print "*********ARRAY IS ZEROOOOOO************"
         # users_reload = room.reload.users 
         current_player = room.users.find_by(is_selected: true)
         current_player.update(is_last: true)
-        # user_array.update_all(is_active: true)
-        room.users.map { |user_obj| user_obj.update(is_active: true) } 
+        room.users.update_all(is_active: true) 
         filtered_users = room.users.reject { |user| user.is_selected }
         next_player = filtered_users.sample(1).first
         next_player.update(is_next: true) 
         UsersChannel.broadcast_to room, { nextPlayer: next_player }
-  
       else
-        print "*********THERE ARE OTHERS************"  
-
         next_player = user_array.sample(1).first
         next_player.update(is_next: true)
         UsersChannel.broadcast_to room, { nextPlayer: next_player }
-
       end
-
     else
       user.destroy
     end
